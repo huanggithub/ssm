@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link href="/bootstrap2.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/css/Common.css" rel="stylesheet"/>
+    <link href="/css/Index2.css" rel="stylesheet"/>
+    <script type="text/javascript" src="/js/vuejs-2.5.16.js"></script>
+    <script type="text/javascript" src="/js/axios-0.18.0.js"></script>
+</head>
+<body>
+<div id="app">
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <h4>数据列表</h4>
+            <div>
+                <div>
+                    <div class="uinArea" id="uinArea">
+                        客户名称：
+                        <input v-model="searchParams.cust_name" type="text" value="" name="custName" class="inputstyle"/>
+                        客户类型：
+                        <input v-model="searchParams.cust_type" type="text" value="" name="custType" class="inputstyle"/>
+                        <button @click="searchList()" type="submit" style="width:60px;" class="button_blue">查询</button>
+                    </div>
+                </div>
+            </div>
+            <div class="add"><a class="btn btn-success" onclick="openadd();">新增</a></div>
+            <div class="w">
+                <div class="span12">
+                    <table class="table table-condensed table-bordered table-hover tab">
+                        <thead>
+                        <tr>
+                            <th>客户名称</th>
+                            <th>客户类型</th>
+                            <th>客户电话</th>
+                            <th>客户地址</th>
+                            <th>所属用户角色</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tbody">
+                        <tr v-for="item in dataList">
+                            <td>{{item.cust_name}}</td>
+                            <td>{{item.cust_type}}</td>
+                            <td>{{item.cust_phone}}</td>
+                            <td>{{item.cust_address}}</td>
+                            <td>{{item.user.rolename}}</td>
+                            <td><a @click="del(item)" href="#">删除</a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div id="page" class="tr"></div>
+                </div>
+            </div>
+
+            <div id="addModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                 aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="myModalLabel">添加客户</h3>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" id="add_form" action="#" method="post">
+                        <div class="control-group">
+                            <label class="control-label" for="cust_name">客户名称</label>
+                            <div class="controls">
+                                <input type="text" v-model="cust.cust_name" id="cust_name" name="custName" placeholder="客户名称">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="cust_type">客户类型</label>
+                            <div class="controls">
+                                <input type="text" v-model="cust.cust_type" id="cust_type" name="custType" placeholder="客户类型">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="cust_phone">客户电话</label>
+                            <div class="controls">
+                                <input type="text" v-model="cust.cust_phone" id="cust_phone" name="custPhone" placeholder="客户电话">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="cust_address">客户地址</label>
+                            <div class="controls">
+                                <input type="text" v-model="cust.cust_address" id="cust_address" name="custAddress" placeholder="客户地址">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" >所属用户角色</label>
+                            <div class="controls">
+                                <!--<select name="user.uid" id="rolename" placeholder="所属用户角色">-->
+                                    <!--<option value="1">超级管理员&#45;&#45;测试</option>-->
+                                <!--</select>-->
+                                <select name="user.uid" id="usertype" v-model="cust.cust_link_user" @change="getCouponSelected">
+                                    <option :value="usertype.uid" v-for="usertype in usertypeList" >{{usertype.rolename}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+                    <button class="btn btn-primary" @click="add()" id="add">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/jquery-1.9.1.min.js"></script>
+<script src="/bootstrap2.3.2/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+    function openadd() {
+        $("#myModalLabel").text("添加用户");
+        $("#userName").attr("readonly", false);
+        $("input").val("");
+        $("#addModal").modal("show");
+        $("#add").show();
+        $("#edt").hide();
+    }
+
+</script>
+</body>
+</html>
+
+<script>
+    var vue = new Vue({
+        el:"#app",
+        data:{
+            dataList:[],
+            searchParams:{},
+            usertypeList:[],
+            // uid:0,
+            cust:{
+                cust_name:"",
+                cust_type:"",
+                cust_phone:"",
+                cust_address:"",
+                cust_link_user:""
+            }
+        },
+        methods:{
+            searchList:function () {
+                axios.post("/cust/findList.do",this.searchParams).then((res)=>{
+                    console.log(res);
+                    if(res.data.flag){
+                        this.dataList = res.data.data;
+                    }else{
+
+                    }
+                })
+            },
+            searchType:function () {
+                axios.post("/cust/searchTypes.do").then((res)=>{
+                    this.usertypeList = res.data.data;
+                })
+            },
+            del:function (e) {
+                axios.post("/cust/del.do",e).then((res)=>{
+                    if(res.data.flag){
+                        // alert(res.data.message);
+                        this.searchList();
+                    }else{
+                        alert(res.data.message);
+                    }
+                })
+            },
+            getCouponSelected:function () {
+                console.log(this.cust.cust_link_user);
+            },
+            add:function () {
+                if(this.cust.cust_name==""
+                ||this.cust.cust_type==""
+                ||this.cust.cust_phone==""
+                ||this.cust.cust_address==""
+                ||this.cust.cust_link_user==""){
+                    alert("不能出现空数据哦！！！")
+                    return;
+                }
+                axios.post("/cust/add.do",this.cust).then((res)=>{
+                    if(res.data.flag){
+                        alert("添加成功");
+                        this.searchList();
+                    }
+                })
+            }
+        },
+        created:function () {
+            this.searchList();
+            this.searchType();
+        }
+    })
+</script>

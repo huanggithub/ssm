@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--映射配置&#45;&#45;namespace接收对应dao接口的全限定类名-->
+<mapper namespace="com.huang.ssm.dao.UserDao">
+   <select id="findById" parameterType="int" resultType="com.huang.ssm.pojo.User">
+       select * from s_user where uid=#{value}
+   </select>
+    <select id="searchTypes" resultType="com.huang.ssm.pojo.User">
+        select uid,rolename from s_user
+    </select>
+</mapper>
